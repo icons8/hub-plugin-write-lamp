@@ -1,0 +1,62 @@
+/* Write lamp: only the hub's tokens, fits any theme; with a unix theme, a terminal look */
+/* the lamp is out of the page flow: it floats on top, centered above the feed, so the interface does not shift */
+/* a strip holding only the lamp takes no room: display: contents, the lamp (fixed) stays visible, nothing shifts */
+.topbar:not(:has(.slot:not(:is([data-plugin="write-lamp"], [data-plugin$=":write-lamp"])):not(:empty))) { display: contents; }
+.slot-topbar:is([data-plugin="write-lamp"], [data-plugin$=":write-lamp"]) { position: fixed; z-index: 60; display: flex; flex-direction: column; align-items: center; }
+.slot-topbar:is([data-plugin="write-lamp"], [data-plugin$=":write-lamp"])[data-pos="top"] { top: var(--wlamp-y, 30px); left: var(--wlamp-x, 50%); transform: translate(-100%, -50%); align-items: flex-end; }
+[data-pos="top"] > .wlamp-pop { left: auto; right: 0; transform: none; }
+.slot-topbar:is([data-plugin="write-lamp"], [data-plugin$=":write-lamp"])[data-pos="bottom"] { right: var(--wlamp-r, 24px); bottom: var(--wlamp-b, 140px); align-items: flex-end; }
+.slot-topbar:is([data-plugin="write-lamp"], [data-plugin$=":write-lamp"]):empty { display: none; }
+.wlamp { box-shadow: 0 4px 14px -4px rgba(0, 0, 0, .35); white-space: nowrap; }
+.wlamp { display: inline-flex; align-items: center; gap: 7px; padding: 2px 10px; border-radius: 999px; cursor: pointer;
+  border: 1px solid color-mix(in oklab, var(--warning) 50%, var(--border)); background: color-mix(in oklab, var(--warning) 10%, var(--card));
+  color: var(--foreground); font: var(--text-sm) var(--font); }
+.wlamp.danger { border-color: color-mix(in oklab, var(--destructive) 50%, var(--border)); background: color-mix(in oklab, var(--destructive) 10%, var(--card)); }
+.wlamp i { width: 10px; height: 10px; border-radius: 50%; background: var(--warning);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--warning) 25%, transparent); }
+.wlamp.danger i { background: var(--destructive); box-shadow: 0 0 0 4px color-mix(in oklab, var(--destructive) 25%, transparent); }
+/* the lamp has one size in every state: invisible "99 writes" and "no writes" (in the page language, data-max and
+   data-none from web/main.js) in the same cell hold room for the longest caption, the text is centered */
+.wlamp-n { display: inline-grid; justify-items: center; }
+.wlamp-n > *, .wlamp-n::before, .wlamp-n::after { grid-area: 1 / 1; }
+.wlamp-n::before { content: attr(data-max); visibility: hidden; }
+.wlamp-n::after { content: attr(data-none); visibility: hidden; }
+/* nobody writes: the lamp stays in place but is off, gray, not blinking */
+.wlamp.idle { border-color: var(--border); background: var(--card); color: var(--muted-foreground); box-shadow: none; }
+.wlamp.idle i { background: var(--muted-foreground); opacity: .45; box-shadow: none; }
+.slot-topbar.on .wlamp i { animation: wlamp-blink 1s steps(1, end) infinite; }
+@keyframes wlamp-blink { 50% { opacity: 0.15; box-shadow: none; } }
+.wlamp-pop { position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); z-index: 60; width: min(480px, 90vw); max-height: 70vh; overflow: auto;
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+  box-shadow: var(--shadow-2, 0 8px 24px rgba(0, 0, 0, .25)); color: var(--foreground); font: var(--text-sm)/1.45 var(--font); text-align: left; }
+.wlamp-h { display: block; margin-bottom: 4px; }
+.wlamp-hist { margin-top: 10px; color: var(--muted-foreground); font: 500 var(--text-sm) var(--font); border: 0; background: none; padding: 0; cursor: pointer; text-align: left; }
+.wlamp-hist:hover { color: var(--foreground); }
+.wlamp-it { display: grid; grid-template-columns: 3.4em minmax(0, 1fr); align-items: baseline; gap: 2px 10px; width: 100%; padding: 7px 0;
+  border: 0; border-top: 1px solid var(--border); background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.wlamp-it:hover b { text-decoration: underline; }
+.wlamp-k { font-size: 12px; font-weight: 600; text-align: center; border-radius: 4px; padding: 1px 0;
+  background: color-mix(in oklab, var(--warning) 20%, var(--card)); }
+.wlamp-k.danger { background: color-mix(in oklab, var(--destructive) 22%, var(--card)); }
+.wlamp-w { grid-column: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted-foreground); font-size: .92em; }
+.wlamp-f { color: var(--muted-foreground); font-size: .85em; margin-top: 6px; }
+@media (prefers-reduced-motion: reduce) { .slot-topbar.on .wlamp i, :root.unix-theme .slot-topbar.on .wlamp { animation: none; } }
+
+/* unix theme: the lamp is inverse "[!] N writes", the whole block blinks; the popup has a thin border in the attention color, no rounding */
+:root.unix-theme .wlamp { box-shadow: none; border: 0; border-radius: 0; background: var(--calm-attn, var(--warning)); color: var(--background); padding: 0 6px; }
+/* a dangerous write (a database, a delete): the same theme color, told apart by the "[‼]" sign of the same width: a
+   foreign red or orange stood out in the green theme */
+:root.unix-theme .wlamp.danger { background: var(--calm-attn, var(--warning)); }
+:root.unix-theme .wlamp.danger::before { content: "[‼]"; }
+:root.unix-theme .wlamp i { display: none; }
+:root.unix-theme .wlamp::before { content: "[!]"; }
+:root.unix-theme .wlamp.idle { background: transparent; color: var(--muted-foreground); box-shadow: none; }
+:root.unix-theme .wlamp.idle::before { content: "[ ]"; }
+:root.unix-theme .slot-topbar.on .wlamp { animation: wlamp-inv 1s steps(1, end) infinite; }
+@keyframes wlamp-inv { 50% { background: transparent; color: var(--calm-attn, var(--warning)); } }
+:root.unix-theme .wlamp-pop { border-radius: 0; box-shadow: none; border: 1px solid var(--calm-attn, var(--warning)); }
+:root.unix-theme .wlamp-k { border-radius: 0; font-weight: 400; }
+:root.unix-theme .wlamp-k.danger { background: color-mix(in oklab, var(--calm-attn, var(--warning)) 30%, var(--card)); }
+[data-pos="bottom"] > .wlamp-pop { top: auto; bottom: calc(100% + 6px); left: auto; right: 0; transform: none; }
+/* the lamp in the input field: the field text does not go under it (web/main.js sets --wlamp-pad) */
+main .dock textarea { padding-right: var(--wlamp-pad, 0px); }
